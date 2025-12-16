@@ -18,6 +18,8 @@ const getUsers = async (req, res) => {
 const addUser = async (req, res) => {
     const body = await getBody(req);
     let newUser =JSON.parse(body).user;
+    console.log("new user",newUser);
+    
     let msg = await userService.addUser(req, res, newUser);
     res.end(msg);
 }
@@ -32,21 +34,10 @@ const updateUser = async (req,res) =>{
     res.end(msg)
 }
 const deleteUser = async (req,res) =>{
-     const parsedUrl = url.parse(req.url, true);
-    const pathParts = parsedUrl.pathname.split('/');
-    
-    // Assuming route is /users/:id
-    const id = pathParts[2]; // pathParts would be ['', 'users', 'id']
-    
-    
-    if (!id) {
-        res.statusCode = 400;
-        res.end('ID is required');
-        return;
-    }
+     
     const body = await getBody(req);
-    let updatedUser = JSON.parse(body).user;
-    let msg = await userService.updatedUser(req,res,id,updatedUser);
+    let deleteUser = JSON.parse(body).user;
+    let msg = await userService.deleteUser(req,res,deleteUser);
     res.end(msg)
 }
 
