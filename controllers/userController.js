@@ -33,8 +33,8 @@ const updateUser = async (req,res) =>{
     let msg = await userService.updateUser(req,res,updatedUser);
     res.end(msg)
 }
-const deleteUser = async (req,res) =>{
-     
+const deleteUser = async (req,res, id) =>{
+     console.log("from delete methode :", id)
     const body = await getBody(req);
     let deleteUser = JSON.parse(body);
     let msg = await userService.deleteUser(req,res,deleteUser);

@@ -26,8 +26,11 @@ const server = http.createServer((req, res) => {
     else if (pathname === '/users' && req.method==='PUT') {
         return userController.updateUser(req, res);
     }
-    else if ( pathname === '/users' && req.method==='DELETE') {
-        return userController.deleteUser(req, res);
+    else if ( pathname.startsWith('/users/') && req.method==='DELETE') {
+        const id = req.url.split('/')[2]?.split('?')[0];
+        console.log("this is the id :", id)
+        return userController.deleteUser(req, res, id);
+        
     }
     else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
