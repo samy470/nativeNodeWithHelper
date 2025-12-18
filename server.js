@@ -1,5 +1,6 @@
 const http = require('http');
 const url = require('url');
+const ejs = require('ejs');
 const port=3000;
 const userController=require('./controllers/userController');
 
@@ -15,20 +16,17 @@ const server = http.createServer((req, res) => {
 
     //const parsedUrl = url.parse(req.url);
 
-   
-
      if (pathname === '/users' && req.method==='GET' ) {  
         return userController.getUsers(req, res);
     }
     else if (pathname === '/users' && req.method==='POST') {
         return userController.addUser(req, res);
     }
-    else if (pathname === '/users' && req.method==='PUT') {
+    else if (pathname.startsWith('/users/') && req.method==='PUT') {
         return userController.updateUser(req, res);
     }
     else if ( pathname.startsWith('/users/') && req.method==='DELETE') {
         const id = req.url.split('/')[2]?.split('?')[0];
-        console.log("this is the id :", id)
         return userController.deleteUser(req, res, id);
         
     }

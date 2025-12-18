@@ -12,35 +12,30 @@ const getBody = (req) => {
 const getUsers = async (req, res) => {
     res.writeHead(200);
     let users = await userService.getAllUsers(req, res);
-    res.end(users);
+    
+    res.end(require('ejs').render(
+  require('fs').readFileSync('./view/index.ejs', 'utf8'),
+  {users: users}
+));
 };
 
 const addUser = async (req, res) => {
     const body = await getBody(req);
     let newUser =JSON.parse(body);
-    console.log("new user",newUser);
     
-    let msg = await userService.addUser(req, res, newUser);
-    res.end(msg);
+    await userService.addUser(req, res, newUser);
 }
-const updateUser = async (req,res) =>{
-     
-    const body = await getBody(req);
-    console.log('body : ',body.user);
-    let updatedUser = JSON.parse(body);
-    console.log("updated user :" ,updatedUser);
+const updateUser = async (req,res, id) =>{
     
-    let msg = await userService.updateUser(req,res,updatedUser);
-    res.end(msg)
+const body = await getBody(req);
+    const updateData = JSON.parse(body);
+    await userService.updateUser(req, res, updateData);
+
 }
 const deleteUser = async (req,res, id) =>{
-     console.log("from delete methode :", id)
     const body = await getBody(req);
-    let deleteUser = JSON.parse(body);
-    let msg = await userService.deleteUser(req,res,deleteUser);
-    res.end(msg)
+    
+    await userService.deleteUser(req,res,{id: id});
 }
-
-
 
 module.exports = { getUsers, addUser,updateUser,deleteUser };

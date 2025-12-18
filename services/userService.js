@@ -1,70 +1,90 @@
-const fs=require('fs').promises;
-const path=require('path');
-const pathName=path.join(__dirname,'../db.json');
+const fs = require('fs');
+const path = require('path');
 
-const getAllUsers = async (req,res) => {
-    const data = await fs.readFile(pathName, 'utf-8');
-    console.log('the data : ',data);
-    res.end(data);
-};
 
-const addUser =async (req,res, user)=>{
-    console.log('user from service : ',user);
-    const data = await fs.readFile(pathName, 'utf-8');
-    if(user){
-        let db = JSON.parse(data);
-        const newId = db.length > 0 
-                ? parseInt(db[db.length - 1].id) + 1 
-                : 1;
-        const newUser ={
-            id:newId,
-            email:user.email,
-            name:user.name
+const getAllUsers = async (req, res) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile('db.json', 'utf-8', (err, data) => {
+            if (err) {
+                reject("error reading file");
+                return;
+            }
+            if (!data) {
+                reject("no products");
+                return;
+            }
+
+            const db = JSON.parse(data).users;
+            let allData = [];
+            if (db.length > 0) {
+                allData = db
+            }
+            resolve(allData);
+        });
+    });
+}
+
+const addUser = async (req, res, userData) => {
+    fs.readFile('db.json', 'utf-8', (err, data) => {
+        if (err) {
+            return res.writeHead(500).end(JSON.stringify({ message: "error writing file" }));
         }
-        db.push(newUser);
-        await fs.writeFile(pathName,JSON.stringify(db));
-        res.end('User added successfully');
+        let db = JSON.parse(data);
+        const userExists = db.users.find(user => user.email === userData.email);
+        if (userExists) {
+            return res.writeHead(400).end(JSON.stringify({ message: "user already exists" }));
+        }
+
+        const newUser = {
+            id: parseInt(db.users[db.users.length - 1].id) + 1,
+            email: userData.email,
+            name: userData.name
+        }
+        db.users.push(newUser);
+        fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
+            return res.writeHead(201).end(JSON.stringify({ message: "user added successfully" }));
+        });
     }
+    )
 }
 
-const updateUser =async (req,res, user)=>{
-    const data = await fs.readFile(pathName, 'utf-8');
-
-    if(user){
+const updateUser = async (req, res, updateData) => {
+    fs.readFile('db.json', 'utf-8', (err, data) => {
+        const { id } = p(req);
         let db = JSON.parse(data);
-        const userIndex = db.findIndex(u => u.id == user.id);
-        const {email,name}=user
-        db[userIndex] = {
-                ...db[userIndex],
-                email: email || db[userIndex].email,
-                name: name || db[userIndex].name
-            };
+        const userIndex = db.users.findIndex(user => user.id == id);
         
-        await fs.writeFile(pathName,JSON.stringify(db));
-        res.end('User updated successfully');
-    }
+        db.users[userIndex] = { ...db.users[userIndex], ...updateData };
+        
+        fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
+            if (err) return res.writeHead(500).end(JSON.stringify({message: "error"}));
+            res.writeHead(200).end(JSON.stringify({message: "updated"}));
+        });
+    });
 }
-const deleteUser = async (req,res,user)=>{
-    const { id, q } = p(req);
-    console.log('this is the id :', id, q);
-    const data = await fs.readFile(pathName, 'utf-8');
-    if(user){
-        let db = JSON.parse(data);
-        const newDb = db.filter(u=> u.id != user.id)
-        await fs.writeFile(pathName,JSON.stringify(newDb));
-        res.end('User removed successfully');
-    }
+
+const deleteUser = async (req, res) => {
+    fs.readFile('db.json', 'utf-8', (err, data) => {
+        const { id, q } = p(req);
+        let db = {};
+        if (data.trim() !== '') db = JSON.parse(data);
+        const users = db.users || [];
+        const filteredUsers = users.filter(user => user.id != id);
+        db.users = filteredUsers;
+        fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
+            if (err) return res.writeHead(500).end(JSON.stringify({ message: "error writing file" }));
+            res.writeHead(200).end(JSON.stringify({ message: "user deleted successfully" }));
+        });
+    })
 }
 
 // Super compact helper
 const p = (req) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const q = Object.fromEntries(url.searchParams);
-  const m = req.url.match(/\/[^\/]+\/([^\/?]+)/);
-  return { ...q, id: m?.[1] || q.id }; // Try path first, then query
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    console.log("this is the url :", url);
+    const q = Object.fromEntries(url.searchParams);
+    const m = req.url.match(/\/[^\/]+\/([^\/?]+)/);
+    return { ...q, id: m?.[1] || q.id };
 };
 
-// Usage (even shorter with destructuring)
-// const { id, search } = p(req);
-
-module.exports={getAllUsers, addUser,updateUser,deleteUser};
+module.exports = { getAllUsers, addUser, updateUser, deleteUser };
