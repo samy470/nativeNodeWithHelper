@@ -30,9 +30,15 @@ const addUser = async (req, res, userData) => {
             return res.writeHead(500).end(JSON.stringify({ message: "error writing file" }));
         }
         let db = JSON.parse(data);
+        if (data.trim() !== '') db = JSON.parse(data);
         const userExists = db.users.find(user => user.email === userData.email);
         if (userExists) {
-            return res.writeHead(400).end(JSON.stringify({ message: "user already exists" }));
+            return res.writeHead(200).end(`
+    <script>
+        alert("User already exists");
+        window.location.href = '/users';
+    </script>
+`);
         }
 
         const newUser = {
@@ -42,7 +48,7 @@ const addUser = async (req, res, userData) => {
         }
         db.users.push(newUser);
         fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
-            return res.writeHead(201).end(JSON.stringify({ message: "user added successfully" }));
+            return res.writeHead(302, { 'Location': '/users' }).end();
         });
     }
     )
@@ -50,41 +56,29 @@ const addUser = async (req, res, userData) => {
 
 const updateUser = async (req, res, updateData) => {
     fs.readFile('db.json', 'utf-8', (err, data) => {
-        const { id } = p(req);
+        const id = updateData.id;
         let db = JSON.parse(data);
         const userIndex = db.users.findIndex(user => user.id == id);
-        
+
         db.users[userIndex] = { ...db.users[userIndex], ...updateData };
-        
+
         fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
-            if (err) return res.writeHead(500).end(JSON.stringify({message: "error"}));
-            res.writeHead(200).end(JSON.stringify({message: "updated"}));
+            res.writeHead(302, { 'Location': '/users' }).end();
         });
     });
 }
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, id) => {
     fs.readFile('db.json', 'utf-8', (err, data) => {
-        const { id, q } = p(req);
         let db = {};
         if (data.trim() !== '') db = JSON.parse(data);
         const users = db.users || [];
         const filteredUsers = users.filter(user => user.id != id);
         db.users = filteredUsers;
         fs.writeFile('db.json', JSON.stringify(db, null, 2), (err) => {
-            if (err) return res.writeHead(500).end(JSON.stringify({ message: "error writing file" }));
-            res.writeHead(200).end(JSON.stringify({ message: "user deleted successfully" }));
+            res.writeHead(302, { 'Location': '/users' }).end();
         });
     })
 }
-
-// Super compact helper
-const p = (req) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    console.log("this is the url :", url);
-    const q = Object.fromEntries(url.searchParams);
-    const m = req.url.match(/\/[^\/]+\/([^\/?]+)/);
-    return { ...q, id: m?.[1] || q.id };
-};
 
 module.exports = { getAllUsers, addUser, updateUser, deleteUser };

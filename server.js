@@ -1,6 +1,6 @@
 const http = require('http');
 const url = require('url');
-const ejs = require('ejs');
+const hbs = require('hbs');
 const port=3000;
 const userController=require('./controllers/userController');
 
@@ -22,10 +22,10 @@ const server = http.createServer((req, res) => {
     else if (pathname === '/users' && req.method==='POST') {
         return userController.addUser(req, res);
     }
-    else if (pathname.startsWith('/users/') && req.method==='PUT') {
+    else if (pathname === '/users/update' && req.method==='POST') {
         return userController.updateUser(req, res);
     }
-    else if ( pathname.startsWith('/users/') && req.method==='DELETE') {
+    else if ( pathname === '/users/delete' && req.method==='POST') {
         const id = req.url.split('/')[2]?.split('?')[0];
         return userController.deleteUser(req, res, id);
         

@@ -1,5 +1,6 @@
 const userService = require('../services/userService');
-const url = require('url');
+const hbs = require('handlebars');
+const fs = require('fs');
 
 const getBody = (req) => {
     return new Promise((resolve) => {
@@ -12,30 +13,37 @@ const getBody = (req) => {
 const getUsers = async (req, res) => {
     res.writeHead(200);
     let users = await userService.getAllUsers(req, res);
-    
-    res.end(require('ejs').render(
-  require('fs').readFileSync('./view/index.ejs', 'utf8'),
-  {users: users}
-));
+
+    const template = (hbs.compile(fs.readFileSync('./view/index.hbs', 'utf8')));
+    const html = template({ users: users });
+    res.end(html);
 };
 
 const addUser = async (req, res) => {
     const body = await getBody(req);
-    let newUser =JSON.parse(body);
-    
+    const params = new URLSearchParams(body);
+    let newUser = {
+        email: params.get('email'),
+        name: params.get('name')
+    }
+
     await userService.addUser(req, res, newUser);
 }
-const updateUser = async (req,res, id) =>{
-    
-const body = await getBody(req);
-    const updateData = JSON.parse(body);
-    await userService.updateUser(req, res, updateData);
-
-}
-const deleteUser = async (req,res, id) =>{
+const updateUser = async (req, res) => {
     const body = await getBody(req);
-    
-    await userService.deleteUser(req,res,{id: id});
+    const params = new URLSearchParams(body);
+    const updateData = {
+        id: params.get('id'),
+        email: params.get('email'),
+        name: params.get('name')
+    }
+    await userService.updateUser(req, res, updateData);
+}
+const deleteUser = async (req, res) => {
+    const body = await getBody(req);
+    const params = new URLSearchParams(body);
+    const id = params.get('id');
+    await userService.deleteUser(req, res, id);
 }
 
-module.exports = { getUsers, addUser,updateUser,deleteUser };
+module.exports = { getUsers, addUser, updateUser, deleteUser };
