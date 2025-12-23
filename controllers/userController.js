@@ -1,9 +1,4 @@
-const express = require('express');
 const userService = require('../services/userService');
-const hbs = require('handlebars');
-const fs = require('fs');
-
-const app = express();
 
 const getUsers = async (req, res) => {
     let users = await userService.getAllUsers();

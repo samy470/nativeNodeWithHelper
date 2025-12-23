@@ -1,9 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const http = require('http');
-const url = require('url');
-
 const app = express();
 const port=3000;
 

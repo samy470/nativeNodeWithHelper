@@ -1,29 +1,9 @@
 {
   "users": [
     {
-      "id": 5,
-      "email": "679@gmail.com",
-      "name": "anis"
-    },
-    {
-      "id": 7,
-      "email": "bily",
-      "name": "4533"
-    },
-    {
-      "id": 8,
-      "email": "samy@gmail",
-      "name": "samy"
-    },
-    {
       "id": 9,
       "email": "billel@gmail.com",
       "name": "billy"
-    },
-    {
-      "id": 10,
-      "email": "test",
-      "name": "asdf"
     }
   ]
 }
